@@ -111,7 +111,7 @@ The following figure shows how various components exchange information in a secu
 3. **The client is authenticated by a third-party identity provider, providing additional depth protection.**
    <img src="./images/en-3.png" alt="image-20220402145100815" style="zoom:60%;" />
 
-4. **The client initiates a single end-to-end certificate-locked TLS connection to the requested server. **
+4. **The client initiates a single end-to-end certificate-locked TLS connection to the requested server.**
 
    Relay only promotes this connection, and cannot "see" any such data stream.
 
@@ -119,9 +119,9 @@ The following figure shows how various components exchange information in a secu
 
 6. **The client verifies whether the server signature matches the signature provided by the controller.**
 
-7. **The server verifies whether the destination address is in its allowable list. **
+7. **The server verifies whether the destination address is in its allowable list.**
 
-8. **Once established, the traffic flows to the destination through the encrypted TLS tunnel. **
+8. **Once established, the traffic flows to the destination through the encrypted TLS tunnel.**
 
    DNS lookup and routing are forwarded from the client and executed by the server on the target network.
 

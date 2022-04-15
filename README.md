@@ -325,13 +325,3 @@ When our services need access to mission-critical network resources, service ava
 #### Disaster Recovery & Business Continuity Planning
 
 ZASentinel has a written DRP/BCP. Our goal is to ensure that customers have access to our services whenever they need it.
-
-### About ZASentinel, etc.
-
-#### Contact us.
-
-Email: corerman@gmail.com
-
-##### Homo sapiens
-
-1403, 14th Floor, Guyang Century Building, Xuanwu District, Nanjing City, Jiangsu Province

@@ -100,7 +100,7 @@ The following figure shows how various components exchange information in a secu
 
 <img src="./images/en-2.png" alt="image-20220402145306066" style="zoom: 60%;" />
 
-1. **The server registers itself to the geographically nearest relay. **
+1. ** The server registers itself to the geographically nearest relay. **
 
    Except for the randomly generated ID and its signature signed by the controller, the relay does not receive any information about the server. Relay only allows server registration if the server's signature is signed by the same controller.
 

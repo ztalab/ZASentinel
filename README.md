@@ -103,9 +103,7 @@ The relay only promotes this connection, but can't "see" any such data flow.
 
 7. The server verifies whether the target address is in its allowed list. 
 
-8. Once established, the traffic flows to the destination through the encrypted TLS tunnel. 
-
-DNS lookup and routing are forwarded from the client and executed by the server on the target network.
+8. Once established, the traffic flows to the destination through the encrypted TLS tunnel. DNS lookup and routing are forwarded from the client and executed by the server on the target network.
 
 9. The relay can be mounted under the CDN network 
 The relay is mounted on the CDN network, and the CDN supports websocket protocol, which better supports the transmission of Header parameters. In terms of security, the CDN can naturally resist DDOS attacks, and effectively optimize network lines and increase traffic communication speed.

@@ -82,32 +82,32 @@ The following diagram illustrates how various components exchange information in
 
 <img src="./images/en-2.png" alt="image-20220402145306066" style="zoom: 60%;" />
 
-1. **The server registers itself with the geographically nearest relay. **
+1. The server registers itself with the geographically nearest relay. 
 
 The relay does not receive any information about the server except the randomly generated ID and its signature signed by the controller. Only when the signature of the server is signed by the same controller, the relay allows the server to register.
 
-2. **The client and the server respectively receive the traffic forwarding permission list. **
+2. The client and the server respectively receive the traffic forwarding permission list. 
 
 Allow lists to be specific to each component. The client's allow list corresponds to the content that users are allowed to access, and the server's list covers the resources that administrators have configured. Two allow lists must be signed by the same controller.
 
-3. **The client is authenticated by a third-party identity provider, providing additional in-depth protection. **
+3. The client is authenticated by a third-party identity provider, providing additional in-depth protection. 
 <img src="./images/en-3.png" alt="image-20220402145100815" style="zoom:60%;" />
 
-4. **The client initiates a TLS connection with a single end-to-end certificate lock to the requested server. **
+4. The client initiates a TLS connection with a single end-to-end certificate lock to the requested server. 
 
 The relay only promotes this connection, but can't "see" any such data flow.
 
-5. **The server verifies whether the client request is signed by the same controller. **
+5. The server verifies whether the client request is signed by the same controller. 
 
-6. **The client verifies whether the server signature matches the signature provided by the controller. **
+6. The client verifies whether the server signature matches the signature provided by the controller. 
 
-7. **The server verifies whether the target address is in its allowed list. **
+7. The server verifies whether the target address is in its allowed list. 
 
-8. **Once established, the traffic flows to the destination through the encrypted TLS tunnel. **
+8. Once established, the traffic flows to the destination through the encrypted TLS tunnel. 
 
 DNS lookup and routing are forwarded from the client and executed by the server on the target network.
 
-9. **The relay can be mounted under the CDN network * *
+9. The relay can be mounted under the CDN network 
 The relay is mounted on the CDN network, and the CDN supports websocket protocol, which better supports the transmission of Header parameters. In terms of security, the CDN can naturally resist DDOS attacks, and effectively optimize network lines and increase traffic communication speed.
 
 ### 1.2. Customer data

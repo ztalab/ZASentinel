@@ -46,7 +46,7 @@ ZASentinel's architecture is designed according to ZTA's main philosophy:
 Generally speaking, these principles are embodied in our products in the following ways:
 
 - No ZASentinel component can independently decide to allow traffic to flow to secure resources on remote networks. And user data flow authorization is always confirmed by running multiple checks by multiple components. In addition, the user data flow and the user authentication flow are handled by separate components and require separate authentication checks.
-- We entrust user authentication to a third-party authentication provider (IdP), which creates a separation of concerns and provides an additional layer of security.
+- We entrust user authentication to a third-party authentication provider, which creates a separation of concerns and provides an additional layer of security.
 - We support extensive logging, provide enhanced visibility, and help administrators monitor, troubleshoot, and investigate the activities of the entire network and terminals, including unauthorized activities, as well as those of individuals who are authorized to access resources but may exceed their business authority.
 - User data streams from the client to the server are encrypted end-to-end. Even though they can pass through relays (components residing in the infrastructure controlled by ZASentinel), ZASentinel cannot decrypt such data. (Encrypted transmission will never have intermediate termination/recovery on the relay. )
 - Our client-relay-server, all components communicate with each other by upgrading to websocket protocol, which better supports the transfer of custom parameters and facilitates the verification of data security and legality.

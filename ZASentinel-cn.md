@@ -330,7 +330,7 @@ ZASentinel 有书面的 DRP/BCP。我们的目标是确保客户在任何需要�
 
 #### 联系我们
 
-Email: libiao@corp-ci.com
+Email: corerman@gmail.com
 
 ##### 智人云公司
 

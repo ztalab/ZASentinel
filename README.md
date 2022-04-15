@@ -18,10 +18,10 @@ This document is divided into two main parts. The first part describes the secur
 
 ZASentinel was originally designed to provide a safe solution for modern "working anywhere" employees. Modern labor force is increasingly dispersed:
 
--More and more users work at home and in remote locations such as public places;
--User devices are scattered among desktop and mobile devices, devices for job posting and personal devices;
--The application is being migrated from inside to the cloud or provided by a third-party SaaS provider;
--Networks are increasingly cloud-based or managed by third parties.
+- More and more users work at home and in remote locations such as public places;
+- User devices are scattered among desktop and mobile devices, devices for job posting and personal devices;
+- The application is being migrated from inside to the cloud or provided by a third-party SaaS provider;
+- Networks are increasingly cloud-based or managed by third parties.
 
 Therefore, the traditional fixed boundary method based on IP address can't meet today's security or availability requirements. ZASentinel's answer is a method based on the concept of zero trust access, which we call identity first network.
 
@@ -39,48 +39,48 @@ Maintain complex subnet assignments and VLAN segments, or manually piece togethe
 
 ZASentinel's architecture is designed according to ZTA's main philosophy:
 
--Every request for private resources should be authenticated and authorized based on real-time context information, such as user identity, device status and other attributes such as time and location.
--Users should only have access to the minimum necessary resources (principle of least privilege).
--Events should be recorded in detail to support monitoring, detection, investigation and other analysis.
+- Every request for private resources should be authenticated and authorized based on real-time context information, such as user identity, device status and other attributes such as time and location.
+- Users should only have access to the minimum necessary resources (principle of least privilege).
+- Events should be recorded in detail to support monitoring, detection, investigation and other analysis.
 
 Generally speaking, these principles are embodied in our products in the following ways:
 
--No ZASentinel component can independently decide to allow traffic to flow to secure resources on remote networks. And user data flow authorization is always confirmed by running multiple checks by multiple components. In addition, the user data flow and the user authentication flow are handled by separate components and require separate authentication checks.
--We entrust user authentication to a third-party authentication provider (IdP), which creates a separation of concerns and provides an additional layer of security.
--We support extensive logging, provide enhanced visibility, and help administrators monitor, troubleshoot, and investigate the activities of the entire network and terminals, including unauthorized activities, as well as those of individuals who are authorized to access resources but may exceed their business authority.
--User data streams from the client to the server are encrypted end-to-end. Even though they can pass through relays (components residing in the infrastructure controlled by ZASentinel), ZASentinel cannot decrypt such data. (Encrypted transmission will never have intermediate termination/recovery on the relay. )
--Our client-relay-server, all components communicate with each other by upgrading to websocket protocol, which better supports the transfer of custom parameters and facilitates the verification of data security and legality.
--Our relay is mounted under the CDN network, which can effectively prevent DDOS attacks, and better optimize network lines to improve access speed. The network CDN supports Websocket protocol and seamlessly integrates with ZASentinel network.
--Our client application is designed to always run in the background.
+- No ZASentinel component can independently decide to allow traffic to flow to secure resources on remote networks. And user data flow authorization is always confirmed by running multiple checks by multiple components. In addition, the user data flow and the user authentication flow are handled by separate components and require separate authentication checks.
+- We entrust user authentication to a third-party authentication provider (IdP), which creates a separation of concerns and provides an additional layer of security.
+- We support extensive logging, provide enhanced visibility, and help administrators monitor, troubleshoot, and investigate the activities of the entire network and terminals, including unauthorized activities, as well as those of individuals who are authorized to access resources but may exceed their business authority.
+- User data streams from the client to the server are encrypted end-to-end. Even though they can pass through relays (components residing in the infrastructure controlled by ZASentinel), ZASentinel cannot decrypt such data. (Encrypted transmission will never have intermediate termination/recovery on the relay. )
+- Our client-relay-server, all components communicate with each other by upgrading to websocket protocol, which better supports the transfer of custom parameters and facilitates the verification of data security and legality.
+- Our relay is mounted under the CDN network, which can effectively prevent DDOS attacks, and better optimize network lines to improve access speed. The network CDN supports Websocket protocol and seamlessly integrates with ZASentinel network.
+- Our client application is designed to always run in the background.
 
 From the customer's point of view, our product architecture provides additional security advantages in the following aspects:
 
-- **Hide the network **-ZASentinel will not publicly expose the access point to your network to promote secure remote access to resources inside the network. This means that, if necessary, the customer network can remain invisible to the public Internet, and it will not be explored by potential attackers.
-- **Support granular access control at port level ** -Compared with VPN that provides access to the whole network, this helps to reduce the explosion radius of intrusion.
-- ** Centralized access management for all private resources ** -This helps IT team to audit and maintain access list to cope with personnel changes.
-- ** Record all network activities centrally** -Identity index log and analysis can provide insight into who is doing what in the whole enterprise network.
-- ** Better availability for administrators ** -Solutions that are easier to configure and maintain are less prone to errors and more effective.
-- ** Provide better usability for end users** -This is an easy-to-deploy, always-on solution, which does not hinder users, promotes the adoption of VPN clients, and avoids common problems of VPN clients, where users shut down their internet connections because they interrupt or slow down.
-- ** Provide a safe and fast network line** -As a public basic service, the relay is mounted under the CDN network to optimize the network access line and effectively prevent DDOS attacks.
+- Hide the network -ZASentinel will not publicly expose the access point to your network to promote secure remote access to resources inside the network. This means that, if necessary, the customer network can remain invisible to the public Internet, and it will not be explored by potential attackers.
+- Support granular access control at port level -Compared with VPN that provides access to the whole network, this helps to reduce the explosion radius of intrusion.
+- Centralized access management for all private resources  -This helps IT team to audit and maintain access list to cope with personnel changes.
+- Record all network activities centrally -Identity index log and analysis can provide insight into who is doing what in the whole enterprise network.
+- Better availability for administrators -Solutions that are easier to configure and maintain are less prone to errors and more effective.
+- Provide better usability for end users -This is an easy-to-deploy, always-on solution, which does not hinder users, promotes the adoption of VPN clients, and avoids common problems of VPN clients, where users shut down their internet connections because they interrupt or slow down.
+- Provide a safe and fast network line -As a public basic service, the relay is mounted under the CDN network to optimize the network access line and effectively prevent DDOS attacks.
 
 #### Architecture & Component Overview
 
 This section provides a high-level overview of the main components that make up the ZASentinel architecture and how they interact. The architecture of ZASentinel is in our document, and we strongly recommend that you read this article in order to have a more comprehensive understanding of the security foundation of ZASentinel.
 
-! [cn-1](./images/en-1.png)
+![en-1](./images/en-1.png)
 
 ZASentinel protects access to customers' remote network resources. ZASentinel consists of four main components, which together ensure that only authenticated users can access the resources they have access to. After ZASentinel is fully configured, the end result is that authorized users can connect to any resource without knowing the underlying network configuration or even which remote network the resource resides on. The four main components are:
 
--Controller-central coordination component of -ZASentinel. The controller is a multi-tenant component operated by ZASentinel. It performs a number of duties, including storing the client configuration information management console managed based on web to register and verify the server, issuing the signature authorization to the client that successfully sends the connection request, entrusting the user authentication to the identity provider, and distributing the signed access control list to the client and the server.
--Client-A software application installed on the end user's device. For users' requests for protected resources, the client acts as a combined authentication and authorization agent through ZASentinel. Routing and authorization decisions take place at the edge of the client.
--Server-A software component designed to be deployed on a device behind a remote network firewall. The server only starts the outbound connection with the controller and relay, and establishes communication with the client through these connections.
--Relay-geographically distributed components operated by ZASentinel. The relay serves as the registration point of the server and the connection point of the client wishing to establish a connection to the server. The relay is mounted under the CDN network to resist DDOS attacks.
+- Controller-central coordination component of -ZASentinel. The controller is a multi-tenant component operated by ZASentinel. It performs a number of duties, including storing the client configuration information management console managed based on web to register and verify the server, issuing the signature authorization to the client that successfully sends the connection request, entrusting the user authentication to the identity provider, and distributing the signed access control list to the client and the server.
+- Client-A software application installed on the end user's device. For users' requests for protected resources, the client acts as a combined authentication and authorization agent through ZASentinel. Routing and authorization decisions take place at the edge of the client.
+- Server-A software component designed to be deployed on a device behind a remote network firewall. The server only starts the outbound connection with the controller and relay, and establishes communication with the client through these connections.
+- Relay-geographically distributed components operated by ZASentinel. The relay serves as the registration point of the server and the connection point of the client wishing to establish a connection to the server. The relay is mounted under the CDN network to resist DDOS attacks.
 
 Client and server components are located on the equipment and infrastructure controlled by customers, while controller and relay components are located in the infrastructure controlled by ZASentinel.
 
 The following diagram illustrates how various components exchange information in a secure way, so as to connect from the client to a specific resource on a remote network:
 
-<img src="./images/cn-2.png" alt="image-20220402145306066" style="zoom: 60%;" />
+<img src="./images/en-2.png" alt="image-20220402145306066" style="zoom: 60%;" />
 
 1. **The server registers itself with the geographically nearest relay. **
 
@@ -91,7 +91,7 @@ The relay does not receive any information about the server except the randomly 
 Allow lists to be specific to each component. The client's allow list corresponds to the content that users are allowed to access, and the server's list covers the resources that administrators have configured. Two allow lists must be signed by the same controller.
 
 3. **The client is authenticated by a third-party identity provider, providing additional in-depth protection. **
-<img src="./images/cn-3.png" alt="image-20220402145100815" style="zoom:60%;" />
+<img src="./images/en-3.png" alt="image-20220402145100815" style="zoom:60%;" />
 
 4. **The client initiates a TLS connection with a single end-to-end certificate lock to the requested server. **
 
@@ -116,9 +116,9 @@ The relay is mounted on the CDN network, and the CDN supports websocket protocol
 
 The main types of customer data processed by ZASentinel are:
 
--User details (such as email addresses, names and group members, but not passwords, as ZASentinel entrusts authentication to a third-party identity provider);
--Infrastructure information (such as network details, resource details and access control list);
--Logs (such as crash and error reports for diagnosis and troubleshooting). The ZASentinel component also records events that allow customers to monitor user activities (for example, user login and token requests).
+- User details (such as email addresses, names and group members, but not passwords, as ZASentinel entrusts authentication to a third-party identity provider);
+- Infrastructure information (such as network details, resource details and access control list);
+- Logs (such as crash and error reports for diagnosis and troubleshooting). The ZASentinel component also records events that allow customers to monitor user activities (for example, user login and token requests).
 
 User network traffic destined for resources protected by ZASentinel can be transmitted through ZASentinel relay in encrypted form. This traffic carrying data is relayed on an instantaneous basis. The relay does not store traffic or any network identifiable information.
 
@@ -138,12 +138,11 @@ Service reliability is the core aspect of information security. This section des
 
 We have designed our infrastructure and software to ensure that ZASentinel performs well, even when the usage of individual customers or our entire customer base increases. The main ways for us to achieve this goal include:
 
--Eliminate the backhaul/trombone problem-the traffic routed through ZASentinel takes a more direct route, instead of routing all traffic through a central gateway geographically far from the start and end points, thus reducing the delay of users and the bandwidth usage of organizations. ZASentinel clients automatically and intelligently connect to ZASentinel controllers and relays, which provide the best performance according to the physical location of users at that time and the resources they need to connect to.
--Support split tunnel-Any user traffic that the organization chooses not to route through ZASentinel will completely bypass ZASentinel and be handled by user equipment independently. This reduces unnecessary traffic sent through additional hops.
--Load balancing-Zasentinel handles multiple levels of load balancing. The controllers and relays of ZASentinel are distributed in different places and geographical areas. As part of infrastructure planning, our goal is to allocate them strategically to reduce delays and provide load balancing in areas where expected traffic loads are high. For example, in high-traffic areas, we can add additional controllers and relays, and balance the load among them. By using the same IaaS provider hosting controller and relay used by customers (for example, in Alibaba Cloud, Huawei Cloud and GCP), the delay is further reduced. On the client side, customers can install multiple servers in the same remote network, and ZASentinel will automatically handle the load balance between the servers to meet the access request of a specific network.
-
--Handling extensions for customers-The traditional network access security model requires organizations to deploy and maintain their own security infrastructure, such as VPN gateways. Expanding the scale will increase the management cost disproportionately and occupy the resources that can be used for other plans. ZASentinel alleviates IT departments' concerns about expansion.
--Distributed authorization processing-the authorization processing workload is distributed, such as at the ZASentinel client level, which helps to improve the overall performance, instead of being concentrated in one place.
+- Eliminate the backhaul/trombone problem-the traffic routed through ZASentinel takes a more direct route, instead of routing all traffic through a central gateway geographically far from the start and end points, thus reducing the delay of users and the bandwidth usage of organizations. ZASentinel clients automatically and intelligently connect to ZASentinel controllers and relays, which provide the best performance according to the physical location of users at that time and the resources they need to connect to.
+- Support split tunnel-Any user traffic that the organization chooses not to route through ZASentinel will completely bypass ZASentinel and be handled by user equipment independently. This reduces unnecessary traffic sent through additional hops.
+- Load balancing-Zasentinel handles multiple levels of load balancing. The controllers and relays of ZASentinel are distributed in different places and geographical areas. As part of infrastructure planning, our goal is to allocate them strategically to reduce delays and provide load balancing in areas where expected traffic loads are high. For example, in high-traffic areas, we can add additional controllers and relays, and balance the load among them. By using the same IaaS provider hosting controller and relay used by customers (for example, in Alibaba Cloud, Huawei Cloud and GCP), the delay is further reduced. On the client side, customers can install multiple servers in the same remote network, and ZASentinel will automatically handle the load balance between the servers to meet the access request of a specific network.
+- Handling extensions for customers-The traditional network access security model requires organizations to deploy and maintain their own security infrastructure, such as VPN gateways. Expanding the scale will increase the management cost disproportionately and occupy the resources that can be used for other plans. ZASentinel alleviates IT departments' concerns about expansion.
+- Distributed authorization processing-the authorization processing workload is distributed, such as at the ZASentinel client level, which helps to improve the overall performance, instead of being concentrated in one place.
 
 ## Information security plan
 
@@ -211,10 +210,10 @@ ZASentinel uses various tools to statically analyze the code and report problems
 
 ZASentinel will cooperate with third-party organizations to regularly conduct security tests on its applications. Testing activities extend from penetration testing to application security assurance and product analysis, including:
 
--Analyze ZASentinel component by component in a "white box" environment
--Reverse engineering, runtime and static analysis of each component to ensure that the engineering design conforms to the best practice safety guidelines;
--Perform automated stress testing, manual vulnerability discovery, and runtime and source code review
--Conduct threat modeling.
+- Analyze ZASentinel component by component in a "white box" environment
+- Reverse engineering, runtime and static analysis of each component to ensure that the engineering design conforms to the best practice safety guidelines;
+- Perform automated stress testing, manual vulnerability discovery, and runtime and source code review
+- Conduct threat modeling.
 
 ##### Penetration test request
 
@@ -246,8 +245,7 @@ Our production network is divided into different areas according to the security
 
 When our services need to access mission-critical network resources, service availability is crucial. We ensure very high service availability by:
 
--Use a world-class infrastructure provider to host our core components.
--Using multiple geographically separated data centers-Zasentinel's infrastructure is hosted in multiple physically separated cloud platform data centers to achieve redundancy. This helps to balance the load and reduces the risk of natural disasters in the environment and other specific locations.
--Implement fault-tolerant, redundant infrastructure-Our services are provided by multiple data centers, which reflect each other's capabilities. If one data center has an availability problem, other data centers will automatically bear the load.
--Provide the ability to resist DDOS attacks-We have implemented certain measures to reduce the risk of DDOS attacks.
--24/7 Monitoring-We use various automated tools to monitor our services 24/7 and remind us of any service availability issues.
+- Use a world-class infrastructure provider to host our core components.
+- Using multiple geographically separated data centers-Zasentinel's infrastructure is hosted in multiple physically separated cloud platform data centers to achieve redundancy. This helps to balance the load and reduces the risk of natural disasters in the environment and other specific locations.
+- Implement fault-tolerant, redundant infrastructure-Our services are provided by multiple data centers, which reflect each other's capabilities. If one data center has an availability problem, other data centers will automatically bear the load.
+- Provide the ability to resist DDOS attacks-We have implemented certain measures to reduce the risk of DDOS attacks.

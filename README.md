@@ -330,7 +330,7 @@ ZASentinel has a written DRP/BCP. Our goal is to ensure that customers have acce
 
 #### Contact us.
 
-Email: libiao@corp-ci.com
+Email: corerman@gmail.com
 
 ##### Homo sapiens
 

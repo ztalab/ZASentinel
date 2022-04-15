@@ -12,7 +12,7 @@ This document is divided into two main parts. The first part describes the secur
 
 ## Product safety
 
-### 1.1. Product Architecture and Design
+### 1.1 Product Architecture and Design
 
 #### Overview of Methods
 
@@ -82,33 +82,33 @@ The following diagram illustrates how various components exchange information in
 
 <img src="./images/en-2.png" alt="image-20220402145306066" style="zoom: 60%;" />
 
-1. The server registers itself with the geographically nearest relay. 
+1.The server registers itself with the geographically nearest relay. 
 
 The relay does not receive any information about the server except the randomly generated ID and its signature signed by the controller. Only when the signature of the server is signed by the same controller, the relay allows the server to register.
 
-2. The client and the server respectively receive the traffic forwarding permission list. 
+2.The client and the server respectively receive the traffic forwarding permission list. 
 
 Allow lists to be specific to each component. The client's allow list corresponds to the content that users are allowed to access, and the server's list covers the resources that administrators have configured. Two allow lists must be signed by the same controller.
 
-3. The client is authenticated by a third-party identity provider, providing additional in-depth protection. 
+3.The client is authenticated by a third-party identity provider, providing additional in-depth protection. 
 <img src="./images/en-3.png" alt="image-20220402145100815" style="zoom:60%;" />
 
-4. The client initiates a TLS connection with a single end-to-end certificate lock to the requested server. 
+4.The client initiates a TLS connection with a single end-to-end certificate lock to the requested server. 
 
 The relay only promotes this connection, but can't "see" any such data flow.
 
-5. The server verifies whether the client request is signed by the same controller. 
+5.The server verifies whether the client request is signed by the same controller. 
 
-6. The client verifies whether the server signature matches the signature provided by the controller. 
+6.The client verifies whether the server signature matches the signature provided by the controller. 
 
-7. The server verifies whether the target address is in its allowed list. 
+7.The server verifies whether the target address is in its allowed list. 
 
-8. Once established, the traffic flows to the destination through the encrypted TLS tunnel. DNS lookup and routing are forwarded from the client and executed by the server on the target network.
+8.Once established, the traffic flows to the destination through the encrypted TLS tunnel. DNS lookup and routing are forwarded from the client and executed by the server on the target network.
 
-9. The relay can be mounted under the CDN network 
+9.The relay can be mounted under the CDN network 
 The relay is mounted on the CDN network, and the CDN supports websocket protocol, which better supports the transmission of Header parameters. In terms of security, the CDN can naturally resist DDOS attacks, and effectively optimize network lines and increase traffic communication speed.
 
-### 1.2. Customer data
+### 1.2 Customer data
 
 #### What customer data do we process?
 
@@ -130,7 +130,7 @@ Customer data is logically isolated in ZASentinel's system according to customer
 
 According to our contract with customers, ZASentinel regards customer data as confidential information of customers, and the ownership of customer data is reserved by customers.
 
-### 1.3. Product performance and scalability
+### 1.3 Product performance and scalability
 
 Service reliability is the core aspect of information security. This section describes service reliability related to performance and scalability. For information on service reliability in terms of availability, please see the following infrastructure & physical security.
 
@@ -144,11 +144,11 @@ We have designed our infrastructure and software to ensure that ZASentinel perfo
 
 ## Information security plan
 
-### 2.1. Overview
+### 2.1 Overview
 
 This section contains a summary of ZASentinel's information security plan. ZASentinel keeps a set of written information security plans, policies and procedures. These plans, policies and procedures are reviewed at least once a year and supplemented by regular risk reviews, which will be incorporated into the continuous development of our information security plan.
 
-### 2.2. Management and organizational security
+### 2.2 Management and organizational security
 
 #### Governance & Responsibility
 
@@ -156,7 +156,7 @@ The chief technology officer of ZASentinel is mainly responsible for ZASentinel'
 
 However, as a safety project, ZASentinel believes that safety is a universal problem, so it is the common responsibility of our whole organization. For example, all our engineers are required to regard safety as a basic part of their work, and they will not simply delegate all responsibilities to other colleagues who are more concerned about safety.
 
-### 2.3. Application Security
+### 2.3 Application Security
 
 #### Data Protection & Access Control
 
@@ -217,7 +217,7 @@ ZASentinel will cooperate with third-party organizations to regularly conduct se
 
 We allow our customers to conduct penetration tests on our system in some cases. Customers must obtain prior approval from our security team and inform us of the time and scope of penetration testing in advance, and may need to sign an agreement covering such testing activities.
 
-### 2.4. Infrastructure and Physical Security
+### 2.4 Infrastructure and Physical Security
 
 #### Equipment security
 

@@ -4,3 +4,4 @@ cert
 bin
 .DS_store
 .history
+vendor

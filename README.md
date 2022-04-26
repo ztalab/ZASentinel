@@ -92,28 +92,28 @@ The following are the certificate extension fields:
 ```json
 {
   "attrs": {
-    "type": "client", 						// Type
-    "port": 48080,								// Client monitoring port
+    "type": "client", 						
+    "port": 48080,								
     "uuid":"a0b9238",
     "name":"client1", 
-    "relays": [										// Relay information
+    "relays": [										
       {
         "uuid": "dcc509a",
         "name": "relay1",
-        "addr": "relay.zsnb.xyz", // Relay domain name
-        "port": 443,			 				// Relay external port, non-relay monitoring port, as the basic setting default 443
+        "addr": "relay.zsnb.xyz", 
+        "port": 443,			 				
         "sort":1
       }
     ],
     "server": {
       "uuid": "879dea2",
       "name": "server1",
-      "addr": "server.zsnb.xyz", 	// Server domain name
-      "out_port": 443	   					// Server external port, deployment needs to be hung with nginx ssl, external port
+      "addr": "server.zsnb.xyz", 	
+      "out_port": 443	   					
     },
    "target": {
-      "host": "192.168.2.80", 		// Targeted Service
-      "port": 3306 								// Target service port
+      "host": "192.168.2.80", 		
+      "port": 3306 								
     }
   }
 }
@@ -133,19 +133,19 @@ The following are the certificate extension fields:
 ```json
 {
   "attrs": {
-    "type": "server", 				// Type
-    "host":"server.zsnb.xyz", // Domain name
-    "port": 5091,							// Monitor the port
-    "out_port": 443,					// External service port
+    "type": "server", 				
+    "host":"server.zsnb.xyz", 
+    "port": 5091,							
+    "out_port": 443,					
     "name": "server1",				
     "uuid": "server1",
-    "resources": [						// Limit resource information
+    "resources": [					
       {
         "uuid": "879dea2", 
         "name": "mysql",			
-        "type": "cidr",				// Type of resource dns/cidr
-        "host": "192.168.2.80/16", // Resource address
-        "port": 3306					// Port
+        "type": "cidr",				
+        "host": "192.168.2.80/16", 
+        "port": 3306					
       }
     ]
   }
@@ -168,9 +168,9 @@ The following are the certificate extension fields:
 ```json
 {
   "attrs": {
-    "type": "relay", 				// Type
-    "address":"relay.com", 	// Domain name
-    "port": 5091,						// Monitoring port, deployment requires hanging nginx ssl, external port 443
+    "type": "relay", 				
+    "address":"relay.com", 	
+    "port": 5091,						
     "name":"relay1",
     "uuid":"a0b9238",
   }

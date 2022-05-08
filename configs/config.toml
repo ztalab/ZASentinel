@@ -11,8 +11,9 @@ AppName = "za-sentinel"
 
 # Certificate Information
 [Certificate]
+# Cert base64
 CertPem = ""
-# root ca cert
+# root ca cert base64
 CaPem = ""
 
 [Influxdb]

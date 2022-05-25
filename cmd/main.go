@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
+	"github.com/ztalab/ZASentinel/internal"
+	"github.com/ztalab/ZASentinel/internal/client"
 	"os"
 
 	"github.com/urfave/cli/v2"
-	server "github.com/ztalab/ZASentinel/internal/app"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 )
 
@@ -19,21 +20,49 @@ func main() {
 	app.Name = "za-sentinel"
 	app.Version = VERSION
 	app.Usage = "Security, network acceleration, zero trust network architecture"
-	app.Flags = []cli.Flag{
-		&cli.StringFlag{
-			Name:     "conf",
-			Aliases:  []string{"c"},
-			Usage:    "The configuration file(.json,.yaml,.toml)",
-			Required: true,
-		},
-	}
-	app.Action = func(c *cli.Context) error {
-		return server.Run(ctx,
-			server.SetConfigFile(c.String("conf")),
-			server.SetVersion(VERSION))
+	app.Flags = commonConfig()
+	app.Commands = []*cli.Command{
+		client.NewCliCmd(ctx),
+		newRelayCmd(ctx),
+		newServerCmd(ctx),
 	}
 	err := app.Run(os.Args)
 	if err != nil {
 		logger.WithContext(ctx).Errorf(err.Error())
+	}
+}
+
+func newRelayCmd(ctx context.Context) *cli.Command {
+	return &cli.Command{
+		Name:  "relay",
+		Usage: "Run relay server",
+		Action: func(c *cli.Context) error {
+			return internal.Run(ctx,
+				internal.SetConfigFile(c.String("conf")),
+				internal.SetVersion(VERSION))
+		},
+	}
+}
+
+func newServerCmd(ctx context.Context) *cli.Command {
+	return &cli.Command{
+		Name:  "server",
+		Usage: "Run server server",
+		Action: func(c *cli.Context) error {
+			return internal.Run(ctx,
+				internal.SetConfigFile(c.String("conf")),
+				internal.SetVersion(VERSION))
+		},
+	}
+}
+
+func commonConfig() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:     "conf",
+			Aliases:  []string{"c"},
+			Usage:    "App configuration file(.json,.yaml,.toml)",
+			Required: true,
+		},
 	}
 }

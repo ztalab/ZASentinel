@@ -2,7 +2,6 @@ package uuid
 
 import (
 	"github.com/google/uuid"
-	"strings"
 )
 
 // UUID Define alias
@@ -24,5 +23,5 @@ func MustUUID() UUID {
 
 // MustString Create uuid
 func MustString() string {
-	return strings.ReplaceAll(MustUUID().String(), "-", "")
+	return MustUUID().String()
 }

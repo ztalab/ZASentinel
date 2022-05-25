@@ -2,14 +2,15 @@ package config
 
 import (
 	"encoding/base64"
-	"fmt"
+	"github.com/ztalab/ZASentinel/pkg/influxdb"
+	"github.com/ztalab/ZASentinel/pkg/logger"
+	"github.com/ztalab/ZASentinel/pkg/util/json"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"github.com/ztalab/ZASentinel/pkg/influxdb"
-	"github.com/ztalab/ZASentinel/pkg/util/json"
 
 	"github.com/koding/multiconfig"
 )
@@ -23,7 +24,8 @@ var (
 
 // I ...
 type I struct {
-	Metrics *influxdb.Metrics
+	Metrics    *influxdb.Metrics
+	HttpClient *http.Client
 }
 
 // MustLoad load config
@@ -62,6 +64,9 @@ func ParseConfigByEnv() error {
 	if v := os.Getenv("PODIP"); v != "" {
 		C.Common.PodIP = v
 	}
+	if v := os.Getenv("CONTRO_HOST"); v != "" {
+		C.Common.ControHost = v
+	}
 	if v := os.Getenv("LOG_HOOK_ENABLED"); v == "true" {
 		C.Log.EnableHook = true
 	}
@@ -79,11 +84,26 @@ func ParseConfigByEnv() error {
 			}
 			C.Certificate.CertPem = string(cv)
 		} else {
-			cert, err := ioutil.ReadFile("./cert/cert.pem")
+			cert, err := ioutil.ReadFile(C.Certificate.CertPemPath)
 			if err != nil {
-				return fmt.Errorf("can not open the `./cert/cert.pem`, err is %+v", err)
+				logger.Errorf("can not open the `%s`, err is %+v", C.Certificate.CertPemPath, err)
 			}
 			C.Certificate.CertPem = string(cert)
+		}
+	}
+	if C.Certificate.KeyPem == "" {
+		if v := os.Getenv("KEY_PEM"); v != "" {
+			cv, err := base64.StdEncoding.DecodeString(v)
+			if err != nil {
+				return err
+			}
+			C.Certificate.KeyPem = string(cv)
+		} else {
+			cert, err := ioutil.ReadFile(C.Certificate.KeyPemPath)
+			if err != nil {
+				logger.Errorf("can not open the `%s`, err is %+v", C.Certificate.KeyPemPath, err)
+			}
+			C.Certificate.KeyPem = string(cert)
 		}
 	}
 	if C.Certificate.CaPem == "" {
@@ -94,9 +114,9 @@ func ParseConfigByEnv() error {
 			}
 			C.Certificate.CaPem = string(cv)
 		} else {
-			cert, err := ioutil.ReadFile("./cert/ca.pem")
+			cert, err := ioutil.ReadFile(C.Certificate.CaPemPath)
 			if err != nil {
-				return fmt.Errorf("can not open the `./cert/root_cert.pem`, err is %+v", err)
+				logger.Errorf("can not open the `%s`, err is %+v", C.Certificate.CaPemPath, err)
 			}
 			C.Certificate.CaPem = string(cert)
 		}
@@ -145,6 +165,7 @@ type Config struct {
 	RunMode      string
 	PrintConfig  bool
 	Common       Common
+	Machine      Machine
 	Log          Log
 	LogRedisHook LogRedisHook
 	Certificate  Certificate
@@ -192,16 +213,22 @@ type LogRedisHook struct {
 
 // Common Configuration parameters
 type Common struct {
-	UniqueID string
-	AppName  string
-	Hostname string
-	PodIP    string
+	UniqueID   string
+	AppName    string
+	Hostname   string
+	PodIP      string
+	ControHost string
 }
 
 // Certificate certificate
 type Certificate struct {
 	CertPem string
 	CaPem   string
+	KeyPem  string
+
+	CertPemPath string
+	CaPemPath   string
+	KeyPemPath  string
 }
 
 type Influxdb struct {
@@ -216,4 +243,48 @@ type Influxdb struct {
 	MaxIdleConnsPerHost int
 	FlushTime           int
 	FlushSize           int
+}
+
+// Machine
+type Machine struct {
+	MachineId string
+	Cookie    string
+}
+
+const lockPath = "./machine.lock"
+
+func (a *Machine) SetMachineId(macid string) {
+	C.Machine.MachineId = macid
+	a.MachineId = macid
+}
+
+func (a *Machine) SetCookie(cookie string) {
+	C.Machine.Cookie = cookie
+	a.Cookie = cookie
+}
+
+func (a *Machine) Write() error {
+	b, err := json.Marshal(a)
+	if err != nil {
+		return err
+	}
+	// Write lock to filesystem to indicate an existing running daemon.
+	err = os.WriteFile(lockPath, b, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Machine) Read() (*Machine, error) {
+	in, err := os.ReadFile(lockPath)
+	if err != nil {
+		return nil, err
+	}
+	var result Machine
+	err = json.Unmarshal(in, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

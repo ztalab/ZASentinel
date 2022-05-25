@@ -1,11 +1,11 @@
 package schema
 
 import (
-	"sort"
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
-
-	jsoniter "github.com/json-iterator/go"
+	"net/url"
+	"sort"
+	"strings"
 )
 
 type ClientConfig struct {
@@ -56,7 +56,7 @@ type (
 
 func ParseClientConfig(attrs map[string]interface{}) (*ClientConfig, error) {
 	var result ClientConfig
-	attrByte, err := jsoniter.Marshal(attrs)
+	attrByte, err := json.Marshal(attrs)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -84,4 +84,59 @@ func (a *ClientConfig) RelaysAscBySort() {
 	sort.Slice(a.Relays, func(i, j int) bool { // asc
 		return a.Relays[i].Sort < a.Relays[j].Sort
 	})
+}
+
+// ControUserDetail Login user information
+type ControUserDetail struct {
+	Uuid   string `json:"uuid"`
+	Status string `json:"status"`
+}
+
+type ControMachineAuthResult struct {
+	ControCommonResult
+	Data string `json:"data"`
+}
+
+// GetCode
+func (a *ControMachineAuthResult) GetCode() string {
+	purl, _ := url.Parse(a.Data)
+	psurl := strings.Split(purl.Path, "/")
+	return psurl[len(psurl)-1]
+}
+
+// ControLoginResult Device login
+type ControLoginResult struct {
+	Events ControLoginEvents `json:"events"`
+	Error  string            `json:"error"`
+}
+
+type ControLoginEvents []*ControLoginEvent
+type ControLoginEvent struct {
+	Category string `json:"category"`
+	Data     string `json:"data"`
+	Id       string `json:"id"`
+}
+
+// ControClientResult Client list
+type ControClientResult struct {
+	ControCommonResult
+	Data ControClientData
+}
+
+// ControClientData
+type ControClientData struct {
+	List     ControClients  `json:"list"`
+	Paginate ControPaginate `json:"paginate"`
+}
+
+type ControClients []*ControClient
+
+// ControClient Controller Client
+type ControClient struct {
+	Uuid     string `json:"uuid"`
+	UserUuid string `json:"user_uuid"`
+	Name     string `json:"name"`
+	CaPem    string `json:"ca_pem"`
+	CertPem  string `json:"cert_pem"`
+	KeyPem   string `json:"key_pem"`
 }

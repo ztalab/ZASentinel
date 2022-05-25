@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-
 func TransparentProxy(clientConn, serverConn io.ReadWriteCloser) error {
 	wg := sync.WaitGroup{}
 	wg.Add(2)

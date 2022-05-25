@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"context"
-	"github.com/ztalab/ZASentinel/internal/app/config"
+	"github.com/ztalab/ZASentinel/internal/config"
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/influxdb"
 	"github.com/ztalab/ZASentinel/pkg/logger"

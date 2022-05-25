@@ -3,8 +3,6 @@ package schema
 import (
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 type RelayConfig struct {
@@ -16,7 +14,7 @@ type RelayConfig struct {
 
 func ParseRelayConfig(attrs map[string]interface{}) (*RelayConfig, error) {
 	var result RelayConfig
-	attrByte, err := jsoniter.Marshal(attrs)
+	attrByte, err := json.Marshal(attrs)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

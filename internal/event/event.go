@@ -2,7 +2,7 @@ package event
 
 import (
 	"context"
-	"github.com/ztalab/ZASentinel/internal/app/schema"
+	"github.com/ztalab/ZASentinel/internal/schema"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/pconst"
 	"github.com/ztalab/ZASentinel/pkg/util/json"

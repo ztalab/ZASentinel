@@ -5,23 +5,23 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
-	"net"
-	"net/http"
-	"net/http/httputil"
-	"strconv"
-	"strings"
-	"time"
-	"github.com/ztalab/ZASentinel/internal/app/config"
-	"github.com/ztalab/ZASentinel/internal/app/contextx"
-	"github.com/ztalab/ZASentinel/internal/app/event"
-	"github.com/ztalab/ZASentinel/internal/app/metrics"
-	"github.com/ztalab/ZASentinel/internal/app/schema"
+	"github.com/ztalab/ZASentinel/internal/config"
+	"github.com/ztalab/ZASentinel/internal/contextx"
+	"github.com/ztalab/ZASentinel/internal/event"
+	"github.com/ztalab/ZASentinel/internal/metrics"
+	"github.com/ztalab/ZASentinel/internal/schema"
 	"github.com/ztalab/ZASentinel/pkg/certificate"
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/pconst"
 	"github.com/ztalab/ZASentinel/pkg/recover"
 	"github.com/ztalab/ZASentinel/pkg/util/trace"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Client struct{}
@@ -31,7 +31,9 @@ func NewClient() *Client {
 }
 
 func (a *Client) DialWS(ctx context.Context, nextAddr *schema.NextServer, conf *schema.ClientConfig) (net.Conn, error) {
-	conn, err := tls.Dial("tcp", nextAddr.Host+":"+nextAddr.Port, nil)
+	conn, err := tls.Dial("tcp", nextAddr.Host+":"+nextAddr.Port, &tls.Config{
+		InsecureSkipVerify: true,
+	})
 	if err != nil {
 		event.NewClientEvent(conf, event.TagConnectFail, err.Error()).Error(ctx)
 		return nil, errors.WithStack(err)
@@ -92,32 +94,30 @@ func (a *Client) DialWS(ctx context.Context, nextAddr *schema.NextServer, conf *
 	return nil, errors.WithStack(err)
 }
 
-func (a *Client) Listen(ctx context.Context, attrs map[string]interface{}) func() {
-	go func() {
-		conf, err := schema.ParseClientConfig(attrs)
-		if err != nil {
-			panic(err)
-		}
-		ln, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port))
-		if err != nil {
-			panic(err)
-		}
-		logger.WithContext(ctx).Printf("Started ZERO ACCESS Client at %v\n", ln.Addr().String())
+func (a *Client) Listen(ctx context.Context, attrs map[string]interface{}) error {
+	conf, err := schema.ParseClientConfig(attrs)
+	if err != nil {
+		return err
+	}
+	//cert, err := tls.X509KeyPair([]byte(config.C.Certificate.CertPem),[]byte(config.C.Certificate.KeyPem))
+	//if err != nil {
+	//	panic(err)
+	//}
+	ln, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port))
+	if err != nil {
+		return err
+	}
+	logger.WithContext(ctx).Printf("Started ZERO ACCESS Client at %v\n", ln.Addr().String())
 
-		for {
-			clientConn, err := ln.Accept()
-			if err != nil {
-				logger.WithErrorStack(ctx, errors.WithStack(err)).Error("Failed to accept connection:", err)
-				continue
-			}
-			recover.Recovery(ctx, func() {
-				a.handleConn(ctx, conf, clientConn)
-			})
+	for {
+		clientConn, err := ln.Accept()
+		if err != nil {
+			logger.WithErrorStack(ctx, errors.WithStack(err)).Error("Failed to accept connection:", err)
+			continue
 		}
-	}()
-	return func() {
-		_, cancel := context.WithTimeout(ctx, time.Second*time.Duration(30))
-		defer cancel()
+		recover.Recovery(ctx, func() {
+			a.handleConn(ctx, conf, clientConn)
+		})
 	}
 }
 

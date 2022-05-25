@@ -198,5 +198,5 @@ bin
 Configure the certificate in the configuration file (configs/config.toml) or the environment variable to start.
 
 ```
-bin/backend -c configs/config.toml
+bin/backend -c configs/config.toml help
 ```

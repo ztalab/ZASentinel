@@ -6,23 +6,23 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"net"
-	"net/http"
-	"net/http/httputil"
-	"strconv"
-	"strings"
-	"time"
-	"github.com/ztalab/ZASentinel/internal/app/config"
-	"github.com/ztalab/ZASentinel/internal/app/contextx"
-	"github.com/ztalab/ZASentinel/internal/app/event"
-	"github.com/ztalab/ZASentinel/internal/app/metrics"
-	"github.com/ztalab/ZASentinel/internal/app/schema"
+	"github.com/ztalab/ZASentinel/internal/config"
+	"github.com/ztalab/ZASentinel/internal/contextx"
+	"github.com/ztalab/ZASentinel/internal/event"
+	"github.com/ztalab/ZASentinel/internal/metrics"
+	"github.com/ztalab/ZASentinel/internal/schema"
 	"github.com/ztalab/ZASentinel/pkg/certificate"
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/pconst"
 	"github.com/ztalab/ZASentinel/pkg/recover"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Relay struct{}
@@ -169,7 +169,7 @@ func (a *Relay) handleConn(ctx context.Context, conf *schema.RelayConfig, client
 }
 
 func (a *Relay) DialWS(ctx context.Context, nextChain *schema.NextServer, req *http.Request, conf *schema.RelayConfig, chains *schema.ClientConfig) (net.Conn, error) {
-	conn, err := tls.Dial("tcp", nextChain.Host+":"+nextChain.Port, nil)
+	conn, err := tls.Dial("tcp", nextChain.Host+":"+nextChain.Port, &tls.Config{InsecureSkipVerify: true})
 	if err != nil {
 		event.NewRelayEvent(chains, conf, event.TagConnectFail, err.Error()).Error(ctx)
 		return nil, errors.WithStack(err)

@@ -1,19 +1,21 @@
-package app
+package internal
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-	"github.com/ztalab/ZASentinel/internal/app/bll"
-	"github.com/ztalab/ZASentinel/internal/app/config"
-	"github.com/ztalab/ZASentinel/internal/app/initer"
+	"github.com/ztalab/ZASentinel/internal/bll"
+	"github.com/ztalab/ZASentinel/internal/config"
+	"github.com/ztalab/ZASentinel/internal/initer"
 	"github.com/ztalab/ZASentinel/pkg/influxdb"
 	influx_client "github.com/ztalab/ZASentinel/pkg/influxdb/client/v2"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/util/structure"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type options struct {
@@ -55,18 +57,32 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 	logger.WithContext(ctx).Printf("Service started, running mode：%s，version：%s，process number：%d", config.C.RunMode, o.Version, os.Getpid())
 
 	// initialize the log module
-	loggerCleanFunc, err := InitLogger()
+	loggerCleanFunc, err := initer.InitLogger()
 	if err != nil {
 		return nil, err
 	}
-
+	err = initer.InitMachine()
+	if err != nil {
+		return nil, err
+	}
 	// initialize the timing module
-	metrice, influxdbCleanFunc, err := InitInfluxdb(ctx)
+	influxdbCleanFunc, err := InitInfluxdb(ctx)
 	if err != nil {
 		return nil, err
 	}
-	config.Is.Metrics = metrice
+	InitHttpClient()
+	return func() {
+		loggerCleanFunc()
+		influxdbCleanFunc()
+	}, nil
+}
 
+// 启动服务
+func InitServer(ctx context.Context, opts ...Option) (func(), error) {
+	initCleanFunc, err := Init(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
 	basicConf, attr, err := initer.InitCert([]byte(config.C.Certificate.CertPem))
 	if err != nil {
 		return nil, err
@@ -74,7 +90,7 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 	var serverCleanFunc func()
 	switch basicConf.Type {
 	case initer.TypeClient:
-		serverCleanFunc = bll.NewClient().Listen(ctx, attr)
+		//serverCleanFunc = bll.NewClient().Listen(ctx, attr)
 		fmt.Println("########## start the client proxy #########")
 	case initer.TypeServer:
 		serverCleanFunc = bll.NewServer().Listen(ctx, attr)
@@ -84,16 +100,15 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 		serverCleanFunc = bll.NewRelay().Listen(ctx, attr)
 	}
 	return func() {
+		initCleanFunc()
 		serverCleanFunc()
-		loggerCleanFunc()
-		influxdbCleanFunc()
 	}, nil
 }
 
-func InitInfluxdb(ctx context.Context) (*influxdb.Metrics, func(), error) {
+func InitInfluxdb(ctx context.Context) (func(), error) {
 	if !config.C.Influxdb.Enabled {
 		logger.WithContext(ctx).Warn("Influxdb Function is disabled")
-		return nil, func() {}, nil
+		return func() {}, nil
 	}
 	client, err := influx_client.NewHTTPClient(influx_client.HTTPConfig{
 		Addr:                fmt.Sprintf("http://%v:%v", config.C.Influxdb.Address, config.C.Influxdb.Port),
@@ -103,11 +118,11 @@ func InitInfluxdb(ctx context.Context) (*influxdb.Metrics, func(), error) {
 		MaxIdleConnsPerHost: config.C.Influxdb.MaxIdleConns,
 	})
 	if err != nil {
-		return nil, func() {}, err
+		return func() {}, err
 	}
 	if _, _, err := client.Ping(1 * time.Second); err != nil {
 		_ = client.Close()
-		return nil, func() {}, err
+		return func() {}, err
 	}
 	iconfig := new(influxdb.CustomConfig)
 	structure.Copy(config.C.Influxdb, iconfig)
@@ -118,16 +133,29 @@ func InitInfluxdb(ctx context.Context) (*influxdb.Metrics, func(), error) {
 			Database:  config.C.Influxdb.Database,
 		},
 	}, iconfig)
-	return metrics, func() {
+	config.Is.Metrics = metrics
+	return func() {
 		client.Close()
 	}, err
+}
+
+func InitHttpClient() {
+	config.Is.HttpClient = &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			IdleConnTimeout: 5 * time.Second,
+		},
+		Timeout: 5 * time.Second,
+	}
 }
 
 func Run(ctx context.Context, opts ...Option) error {
 	state := 1
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	cleanFunc, err := Init(ctx, opts...)
+	cleanFunc, err := InitServer(ctx, opts...)
 	if err != nil {
 		return err
 	}

@@ -8,13 +8,22 @@ PrintConfig = true
 [Common]
 UniqueId = "za-sentinel"
 AppName = "za-sentinel"
+ControHost = "http://192.168.2.80:9534"
 
 # Certificate Information
 [Certificate]
 # Cert base64
 CertPem = ""
-# root ca cert base64
+# Cert path
+CertPemPath = "./cert/cert.pem"
+# Key cert base64
+KeyPem = ""
+# Key path
+KeyPemPath = "./cert/key.pem"
+# ca cert base64
 CaPem = ""
+# ca cert path
+CaPemPath = "./cert/ca.pem"
 
 [Influxdb]
 Enabled = false

@@ -3,8 +3,6 @@ package schema
 import (
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 type ServerConfig struct {
@@ -17,7 +15,7 @@ type ServerConfig struct {
 
 func ParseServerConfig(attrs map[string]interface{}) (*ServerConfig, error) {
 	var result ServerConfig
-	attrByte, err := jsoniter.Marshal(attrs)
+	attrByte, err := json.Marshal(attrs)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

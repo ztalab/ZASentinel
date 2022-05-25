@@ -3,25 +3,26 @@ package bll
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"net"
-	"net/http"
-	"net/http/httputil"
-	"strconv"
-	"strings"
-	"time"
-	"github.com/ztalab/ZASentinel/internal/app/config"
-	"github.com/ztalab/ZASentinel/internal/app/contextx"
-	"github.com/ztalab/ZASentinel/internal/app/event"
-	"github.com/ztalab/ZASentinel/internal/app/metrics"
-	"github.com/ztalab/ZASentinel/internal/app/schema"
+	"github.com/ztalab/ZASentinel/internal/config"
+	"github.com/ztalab/ZASentinel/internal/contextx"
+	"github.com/ztalab/ZASentinel/internal/event"
+	"github.com/ztalab/ZASentinel/internal/metrics"
+	"github.com/ztalab/ZASentinel/internal/schema"
 	"github.com/ztalab/ZASentinel/pkg/certificate"
 	"github.com/ztalab/ZASentinel/pkg/errors"
 	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/pconst"
 	"github.com/ztalab/ZASentinel/pkg/recover"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Server struct{}
@@ -182,10 +183,13 @@ func (a *Server) Listen(ctx context.Context, attrs map[string]interface{}) func(
 		if err != nil {
 			panic(err)
 		}
-		l, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port))
+		cert, err := tls.X509KeyPair([]byte(config.C.Certificate.CertPem), []byte(config.C.Certificate.KeyPem))
 		if err != nil {
 			panic(err)
 		}
+		l, err := tls.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port), &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		})
 		logger.WithContext(ctx).Printf("Started ZERO ACCESS Server at %v\n", l.Addr().String())
 		for {
 			conn, err := l.Accept()

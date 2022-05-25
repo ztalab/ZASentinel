@@ -1,10 +1,10 @@
-package app
+package initer
 
 import (
+	"github.com/ztalab/ZASentinel/internal/config"
+	"github.com/ztalab/ZASentinel/pkg/logger"
 	"os"
 	"path/filepath"
-	"github.com/ztalab/ZASentinel/internal/app/config"
-	"github.com/ztalab/ZASentinel/pkg/logger"
 
 	"github.com/sirupsen/logrus"
 

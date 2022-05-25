@@ -83,7 +83,10 @@ func (a *Relay) ReadInitiaWSRequest(ctx context.Context, conf *schema.RelayConfi
 		return nil, nil, ctx, errors.WithStack(err)
 	}
 	reqBytes, err := httputil.DumpRequest(req, false)
-	err = errors.New("Illegal request:\n" + string(reqBytes) + "\nerrors:" + err.Error())
+	if err != nil {
+		return nil, nil, ctx, errors.WithStack(err)
+	}
+	err = errors.New("Reply Illegal request:\n" + string(reqBytes))
 	return nil, nil, ctx, errors.WithStack(err)
 }
 
@@ -229,7 +232,13 @@ func (a *Relay) Listen(ctx context.Context, attrs map[string]interface{}) func()
 		if err != nil {
 			panic(err)
 		}
-		l, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port))
+		cert, err := tls.X509KeyPair([]byte(config.C.Certificate.CertPem), []byte(config.C.Certificate.KeyPem))
+		if err != nil {
+			panic(err)
+		}
+		l, err := tls.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port), &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		})
 		if err != nil {
 			panic(err)
 		}

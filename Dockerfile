@@ -13,4 +13,4 @@ COPY --from=builder /build/backend .
 COPY --from=builder /build/configs/config.toml .
 RUN chmod +x backend
 
-CMD ["./backend", "-c", "config.toml"]
+CMD ["./backend", "-c", "config.toml", "server"]

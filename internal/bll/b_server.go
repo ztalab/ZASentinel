@@ -90,7 +90,10 @@ func (a *Server) ReadInitiaWSRequest(ctx context.Context, connReader *bufio.Read
 		return nil, nil, ctx, errors.WithStack(err)
 	}
 	reqBytes, err := httputil.DumpRequest(req, false)
-	err = errors.New("Illegal request:\n" + string(reqBytes) + "\nerrors:" + err.Error())
+	if err != nil {
+		return nil, nil, ctx, errors.WithStack(err)
+	}
+	err = errors.New("Server Illegal request:\n" + string(reqBytes))
 	return nil, nil, ctx, errors.WithStack(err)
 }
 
@@ -190,6 +193,9 @@ func (a *Server) Listen(ctx context.Context, attrs map[string]interface{}) func(
 		l, err := tls.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port), &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		})
+		if err != nil {
+			panic(err)
+		}
 		logger.WithContext(ctx).Printf("Started ZERO ACCESS Server at %v\n", l.Addr().String())
 		for {
 			conn, err := l.Accept()

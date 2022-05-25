@@ -90,7 +90,7 @@ func (a *Client) DialWS(ctx context.Context, nextAddr *schema.NextServer, conf *
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	err = errors.New("Illegal request:\n" + string(respBytes) + "\nstatus:" + resp.Status)
+	err = errors.New("Got unexpected response:\n" + string(respBytes) + "\nstatus:" + resp.Status)
 	return nil, errors.WithStack(err)
 }
 

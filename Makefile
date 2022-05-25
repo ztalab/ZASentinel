@@ -10,19 +10,13 @@ GOPROXY=https://goproxy.oneitfarm.com,https://goproxy.cn,direct
 
 CFLAGS = -ldflags "-w -s -X main.VERSION=$(RELEASE_TAG)" -o $(SERVER_BIN) ./cmd
 
-all: start
+all: release
 
 build:
 	@go build $(CFLAGS)
 
-start:
-	go run -ldflags "-X main.VERSION=$(RELEASE_TAG)" ./cmd/main.go web -c ./configs/config.toml
-
 test:
 	@go test -v $(shell go list ./...)
-
-clean:
-	rm -rf data release $(SERVER_BIN) internal/app/test/data cmd/data
 
 release:
 	if [ ! -d "./bin/" ]; then \

@@ -87,21 +87,19 @@ func InitServer(ctx context.Context, opts ...Option) (func(), error) {
 	if err != nil {
 		return nil, err
 	}
-	var serverCleanFunc func()
 	switch basicConf.Type {
 	case initer.TypeClient:
 		//serverCleanFunc = bll.NewClient().Listen(ctx, attr)
 		fmt.Println("########## start the client proxy #########")
 	case initer.TypeServer:
-		serverCleanFunc = bll.NewServer().Listen(ctx, attr)
+		bll.NewServer().Listen(ctx, attr)
 		fmt.Println("########## start the server proxy #########")
 	case initer.TypeRelay:
 		fmt.Println("########## start the relay proxy #########")
-		serverCleanFunc = bll.NewRelay().Listen(ctx, attr)
+		bll.NewRelay().Listen(ctx, attr)
 	}
 	return func() {
 		initCleanFunc()
-		serverCleanFunc()
 	}, nil
 }
 

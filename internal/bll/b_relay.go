@@ -160,10 +160,12 @@ func (a *Relay) handleConn(ctx context.Context, conf *schema.RelayConfig, client
 			logger.WithErrorStack(ctx, err).Errorf("The relay side failed to request the lower-level service:Addr:%s:%s Error:%v", nextServer.Host, nextServer.Port, err)
 			return err
 		}
+		defer serverConn.Close()
 		event.NewRelayEvent(chains, conf, event.TagConnectSuccess, "").Info(ctx)
 		end := time.Now().Sub(begin).String()
 		metrics.AddDelayPoint(ctx, pconst.OperatorRelay, metrics.ReqSuccess, end, conf.UUID, conf.Name)
-		return TransparentProxy(clientConn, serverConn)
+		TransparentProxy(clientConn, serverConn)
+		return nil
 	}
 	err = errors.New("Relay side certificate verification failed\n")
 	logger.WithErrorStack(ctx, errors.WithStack(err)).Error(err)
@@ -226,7 +228,7 @@ func NewRelay() *Relay {
 	return &Relay{}
 }
 
-func (a *Relay) Listen(ctx context.Context, attrs map[string]interface{}) func() {
+func (a *Relay) Listen(ctx context.Context, attrs map[string]interface{}) {
 	go func() {
 		conf, err := schema.ParseRelayConfig(attrs)
 		if err != nil {
@@ -254,10 +256,6 @@ func (a *Relay) Listen(ctx context.Context, attrs map[string]interface{}) func()
 			})
 		}
 	}()
-	return func() {
-		_, cancel := context.WithTimeout(ctx, time.Second*time.Duration(30))
-		defer cancel()
-	}
 }
 
 func (a *Relay) GetNextServer(conf *schema.RelayConfig, chains *schema.ClientConfig) *schema.NextServer {

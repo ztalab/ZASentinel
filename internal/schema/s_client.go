@@ -106,15 +106,8 @@ func (a *ControMachineAuthResult) GetCode() string {
 
 // ControLoginResult Device login
 type ControLoginResult struct {
-	Events ControLoginEvents `json:"events"`
-	Error  string            `json:"error"`
-}
-
-type ControLoginEvents []*ControLoginEvent
-type ControLoginEvent struct {
-	Category string `json:"category"`
-	Data     string `json:"data"`
-	Id       string `json:"id"`
+	ControCommonResult
+	Data string `json:"data"`
 }
 
 // ControClientResult Client list

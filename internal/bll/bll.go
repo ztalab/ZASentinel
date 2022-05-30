@@ -2,29 +2,19 @@ package bll
 
 import (
 	"io"
-	"sync"
+	"net"
 )
 
-func TransparentProxy(clientConn, serverConn io.ReadWriteCloser) error {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
-	copyAndCloseWrite := func(dst io.WriteCloser, src io.ReadCloser) error {
-		_, err := io.Copy(dst, src)
-		if closeWriter, ok := dst.(interface {
-			CloseWrite() error
-		}); ok {
-			closeWriter.CloseWrite()
-		} else {
-			dst.Close()
-		}
-		wg.Done()
-		return err
+func TransparentProxy(clientConn, serverConn net.Conn) {
+	errChan := make(chan error, 2)
+	copyConn := func(a, b net.Conn) {
+		_, err := io.Copy(a, b)
+		errChan <- err
 	}
-
-	go copyAndCloseWrite(serverConn, clientConn)
-	err := copyAndCloseWrite(clientConn, serverConn)
-
-	wg.Wait()
-	return err
+	go copyConn(clientConn, serverConn)
+	go copyConn(serverConn, clientConn)
+	select {
+	case <-errChan:
+		return
+	}
 }

@@ -11,9 +11,9 @@ import (
 	"github.com/ztalab/ZASentinel/internal/initer"
 	"github.com/ztalab/ZASentinel/internal/schema"
 	"github.com/ztalab/ZASentinel/pkg/errors"
+	"github.com/ztalab/ZASentinel/pkg/logger"
 	"github.com/ztalab/ZASentinel/pkg/util/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,12 +50,9 @@ func UpCmd(ctx context.Context) *cli.Command {
 					internal.SetConfigFile(c.String("conf")),
 				)
 				if err != nil {
-					return func() {}, err
+					return nil, err
 				}
-				err = RunUp(ctx)
-				if err != nil {
-					return func() {}, err
-				}
+				RunUp(ctx)
 				return func() {
 					initCleanFunc()
 				}, nil
@@ -65,40 +62,40 @@ func UpCmd(ctx context.Context) *cli.Command {
 	}
 }
 
-func RunUp(ctx context.Context) error {
+func RunUp(ctx context.Context) {
 	up := NewUp()
 	fmt.Println("----------------------------------------------------------------------")
 	fmt.Println("------------------------Interactive UI Start--------------------------")
 	fmt.Println("----------------------------------------------------------------------")
-	// 预登录
-	err := up.preLogin()
-	if err != nil {
-		return err
-	}
-	// 获取客户端列表
-	client, err := up.printClients()
-	if err != nil {
-		return err
-	}
-	config.C.Certificate.CertPem = client.CertPem
-	config.C.Certificate.CaPem = client.CaPem
-	config.C.Certificate.KeyPem = client.KeyPem
-
-	basicConf, attr, err := initer.InitCert([]byte(config.C.Certificate.CertPem))
-	if err != nil {
-		return err
-	}
-	if basicConf.Type != initer.TypeClient {
-		return errors.New("Certificate error, not a client certificate")
-	}
 	go func() {
+		// Pre login
+		err := up.preLogin()
+		if err != nil {
+			logger.Fatalf("%v", err)
+		}
+		// Get client list
+		client, err := up.printClients()
+		if err != nil {
+			logger.Fatalf("%v", err)
+		}
+		config.C.Certificate.CertPem = client.CertPem
+		config.C.Certificate.CaPem = client.CaPem
+		config.C.Certificate.KeyPem = client.KeyPem
+
+		basicConf, attr, err := initer.InitCert([]byte(config.C.Certificate.CertPem))
+		if err != nil {
+			logger.Fatalf("%v", err)
+		}
+		if basicConf.Type != initer.TypeClient {
+			logger.Fatalf("%v", errors.New("Certificate error, not a client certificate"))
+		}
+
 		err = bll.NewClient().Listen(ctx, attr)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatalf("%v", err)
 		}
 		fmt.Println("########## start the client proxy #########")
 	}()
-	return nil
 }
 
 // printClients
@@ -171,9 +168,11 @@ func (a *Up) autoLogin() error {
 	if err != nil {
 		return err
 	} else {
+		a.State = StateAuthenticated
 		config.C.Machine.SetCookie(result.Data)
-		return config.C.Machine.Write()
+		_ = config.C.Machine.Write()
 	}
+	return nil
 }
 
 func (a *Up) GetUserDetail() (*schema.ControUserDetail, error) {
@@ -238,8 +237,9 @@ func (a *Up) GetAuthUrl() (*schema.ControMachineAuthResult, error) {
 }
 
 // GetLoginResult Get login result information
-func (a *Up) GetLoginResult(timeout int) (*schema.ControLoginEvent, error) {
+func (a *Up) GetLoginResult(timeout int) (*schema.ControLoginResult, error) {
 	url := fmt.Sprintf("%s/api/v1/controlplane/machine/auth/poll?timeout=%d&category=%s", config.C.Common.ControHost, timeout, a.UpCode)
+	fmt.Println(url)
 	client := &http.Client{}
 	resp, err := client.Get(url)
 	if err != nil {
@@ -255,13 +255,10 @@ func (a *Up) GetLoginResult(timeout int) (*schema.ControLoginEvent, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	if result.Error != "" {
-		return nil, errors.NewWithStack(result.Error)
+	if result.Code != 1001 {
+		return nil, errors.NewWithStack(result.Message)
 	}
-	if len(result.Events) <= 0 {
-		return nil, errors.NewWithStack("Login information not obtained")
-	}
-	return result.Events[0], nil
+	return &result, nil
 }
 
 // httpControDo
@@ -278,6 +275,9 @@ func httpControDo(req *http.Request) ([]byte, error) {
 	resp, err := config.Is.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, errors.NewWithStack(resp.Status)
 	}
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)

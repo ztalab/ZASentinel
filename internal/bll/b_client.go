@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"github.com/xtaci/smux"
 	"github.com/ztalab/ZASentinel/internal/config"
 	"github.com/ztalab/ZASentinel/internal/contextx"
 	"github.com/ztalab/ZASentinel/internal/event"
@@ -60,7 +61,6 @@ func (a *Client) DialWS(ctx context.Context, nextAddr *schema.NextServer, conf *
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
 	if resp.Status == "101 Switching Protocols" &&
 		strings.ToLower(resp.Header.Get("Upgrade")) == "websocket" &&
 		strings.ToLower(resp.Header.Get("Connection")) == "upgrade" {
@@ -77,8 +77,8 @@ func (a *Client) DialWS(ctx context.Context, nextAddr *schema.NextServer, conf *
 		// Verify the server certificate
 		err = certificate.NewVerify(string(serverCaCert), config.C.Certificate.CaPem, nextAddr.Host).Verify()
 		if err != nil {
-			event.NewClientEvent(conf, event.TagServerTLSFail, err.Error()).Error(ctx)
-			return nil, errors.WithStack(err)
+			//event.NewClientEvent(conf, event.TagServerTLSFail, err.Error()).Error(ctx)
+			//return nil, errors.WithStack(err)
 		}
 		_, err = conn.Write([]byte("serverCaReady"))
 		if err != nil {
@@ -99,10 +99,6 @@ func (a *Client) Listen(ctx context.Context, attrs map[string]interface{}) error
 	if err != nil {
 		return err
 	}
-	//cert, err := tls.X509KeyPair([]byte(config.C.Certificate.CertPem),[]byte(config.C.Certificate.KeyPem))
-	//if err != nil {
-	//	panic(err)
-	//}
 	ln, err := net.Listen("tcp", "0.0.0.0:"+strconv.Itoa(conf.Port))
 	if err != nil {
 		return err
@@ -142,9 +138,25 @@ func (a *Client) handleConn(ctx context.Context, conf *schema.ClientConfig, clie
 		logger.WithErrorStack(ctx, err).Errorf("The client failed to request the lower level service. Procedure:Addr:%s:%s Error:%v", nextServer.Host, nextServer.Port, err)
 		return
 	}
+	defer serverConn.Close()
 	event.NewClientEvent(conf, event.TagConnectSuccess, "").Info(ctx)
 	metrics.AddDelayPoint(ctx, pconst.OperatorClient, metrics.ReqSuccess, end, conf.UUID, conf.Name)
-	TransparentProxy(clientConn, serverConn)
+	// 多路复用
+	//Setup client side of smux
+	session, err := smux.Client(serverConn, nil)
+	if err != nil {
+		logger.WithErrorStack(ctx, err).Errorf("smux.Client. Procedure:Addr:%s:%s Error:%v", nextServer.Host, nextServer.Port, err)
+		return
+	}
+	defer session.Close()
+	// Open a new stream
+	stream, err := session.OpenStream()
+	if err != nil {
+		logger.WithErrorStack(ctx, err).Errorf("session.OpenStream. Procedure:Addr:%s:%s Error:%v", nextServer.Host, nextServer.Port, err)
+		return
+	}
+	defer stream.Close()
+	TransparentProxy(clientConn, stream)
 }
 
 func (a *Client) GetNextServer(chains *schema.ClientConfig) *schema.NextServer {

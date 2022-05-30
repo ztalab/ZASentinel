@@ -8,7 +8,7 @@ PrintConfig = true
 [Common]
 UniqueId = "za-sentinel"
 AppName = "za-sentinel"
-ControHost = "http://192.168.2.80:9534"
+ControHost = "https://net.ztalab.xyz"
 
 # Certificate Information
 [Certificate]

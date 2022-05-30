@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"github.com/xtaci/smux"
 	"github.com/ztalab/ZASentinel/internal/config"
 	"github.com/ztalab/ZASentinel/internal/contextx"
 	"github.com/ztalab/ZASentinel/internal/event"
@@ -129,14 +130,6 @@ func (a *Server) GenerateInitialWSResponse(ctx context.Context, clientConn net.C
 
 func (a *Server) handleConn(ctx context.Context, conf *schema.ServerConfig, clientConn net.Conn) error {
 	begin := time.Now()
-	defer func() {
-		closeErr := clientConn.Close()
-		if closeErr != nil {
-			logger.WithContext(ctx).Errorf("Closed Connection with error: %v\n", closeErr)
-		} else {
-			logger.WithContext(ctx).Infof("Closed Connection: %v\n", clientConn.RemoteAddr().String())
-		}
-	}()
 	connReader := bufio.NewReader(clientConn)
 	chains, req, ctx, err := a.ReadInitiaWSRequest(ctx, connReader, conf)
 	if err != nil {
@@ -168,7 +161,28 @@ func (a *Server) handleConn(ctx context.Context, conf *schema.ServerConfig, clie
 		}
 		metrics.AddDelayPoint(ctx, pconst.OperatorServer, metrics.ReqSuccess, time.Now().Sub(begin).String(), conf.UUID, conf.Name)
 		event.NewServerEvent(chains, conf, event.TagConnectSuccess, "").Info(ctx)
-		return TransparentProxy(clientConn, serverConn)
+		// 多路复用
+		session, err := smux.Server(clientConn, nil)
+		if err != nil {
+			return err
+		}
+		stream, err := session.AcceptStream()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			closeErr := clientConn.Close()
+			if closeErr != nil {
+				logger.WithContext(ctx).Errorf("Closed Connection with error: %v\n", closeErr)
+			} else {
+				logger.WithContext(ctx).Infof("Closed Connection: %v\n", clientConn.RemoteAddr().String())
+			}
+			serverConn.Close()
+			session.Close()
+			stream.Close()
+		}()
+		TransparentProxy(stream, serverConn)
+		return nil
 	}
 	err = errors.New("Server certificate verification failed")
 	logger.WithErrorStack(ctx, errors.WithStack(err)).Error(err)
@@ -180,7 +194,7 @@ func NewServer() *Server {
 	return &Server{}
 }
 
-func (a *Server) Listen(ctx context.Context, attrs map[string]interface{}) func() {
+func (a *Server) Listen(ctx context.Context, attrs map[string]interface{}) {
 	go func() {
 		conf, err := schema.ParseServerConfig(attrs)
 		if err != nil {
@@ -208,8 +222,4 @@ func (a *Server) Listen(ctx context.Context, attrs map[string]interface{}) func(
 			})
 		}
 	}()
-	return func() {
-		_, cancel := context.WithTimeout(ctx, time.Second*time.Duration(30))
-		defer cancel()
-	}
 }

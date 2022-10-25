@@ -82,8 +82,8 @@ func (a *Event) Warn(ctx context.Context) {
 func (a *Event) toLog(ctx context.Context, level logrus.Level) {
 	msg := json.MarshalToString(a)
 	fields := make(map[string]interface{})
-	fields["customLog1"] = "Events"
-	fields["customLog1"] = a.Operator
+	fields["Events"] = "Events"
+	fields["Operator"] = a.Operator
 	switch level {
 	case logrus.ErrorLevel:
 		logger.WithContext(ctx).WithFields(fields).Errorf("Events：%s", msg)

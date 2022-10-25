@@ -112,7 +112,7 @@ The following are the certificate extension fields:
       "out_port": 443	   					
     },
    "target": {
-      "host": "127.0.0.1", 		
+      "host": "192.168.2.80", 		
       "port": 3306 								
     }
   }
@@ -144,7 +144,7 @@ The following are the certificate extension fields:
         "uuid": "879dea2", 
         "name": "mysql",			
         "type": "cidr",				
-        "host": "127.0.0.1/16", 
+        "host": "192.168.2.80/16", 
         "port": 3306					
       }
     ]

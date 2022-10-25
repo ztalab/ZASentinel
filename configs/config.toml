@@ -27,7 +27,7 @@ CaPemPath = "./cert/ca.pem"
 
 [Influxdb]
 Enabled = false
-Address = "127.0.0.1"
+Address = "192.168.2.80"
 Port = 18086
 Username = "username"
 Password = "password"
@@ -54,5 +54,5 @@ HookMaxThread = 1
 HookMaxBuffer = 512
 
 [LogRedisHook]
-Addr = "127.0.0.1:6379"
+Addr = "192.168.2.80:6379"
 Key = "msp"
